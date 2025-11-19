@@ -1,0 +1,104 @@
+{
+  "version": "1.0",
+  "tasks": [
+    {
+      "name": "create-full-app",
+      "description": "Erstellt eine komplette App von Grund auf: GitHub Repo + Vercel Deploy + Mobile Build",
+      "trigger": "user_command",
+      "steps": [
+        {
+          "action": "github_create_repo",
+          "params": {
+            "name": "{{project_name}}",
+            "description": "{{project_description}}",
+            "auto_init": true
+          }
+        },
+        {
+          "action": "github_push_files",
+          "params": {
+            "repo": "{{project_name}}",
+            "files": "{{generated_files}}"
+          }
+        },
+        {
+          "action": "vercel_deploy",
+          "params": {
+            "projectName": "{{project_name}}",
+            "branch": "main"
+          }
+        },
+        {
+          "action": "supabase_log",
+          "params": {
+            "type": "project_created",
+            "payload": "{{project_data}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "deploy-existing",
+      "description": "Deployed ein existierendes Projekt auf Vercel",
+      "trigger": "user_command",
+      "steps": [
+        {
+          "action": "vercel_deploy",
+          "params": {
+            "projectName": "{{project_name}}"
+          }
+        },
+        {
+          "action": "supabase_log",
+          "params": {
+            "type": "deployment",
+            "payload": "{{deployment_data}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "build-mobile",
+      "description": "Erstellt einen Mobile Build (Android/iOS)",
+      "trigger": "user_command",
+      "steps": [
+        {
+          "action": "mobile_build",
+          "params": {
+            "projectId": "{{project_id}}",
+            "platform": "{{platform}}"
+          }
+        },
+        {
+          "action": "supabase_log",
+          "params": {
+            "type": "mobile_build",
+            "payload": "{{build_data}}"
+          }
+        }
+      ]
+    }
+  ],
+  "permissions": {
+    "allowed_modifications": [
+      "src/app/dashboard/**/*.tsx",
+      "src/app/api/**/*.ts",
+      "public/**"
+    ],
+    "restricted": [
+      "src/auth.ts",
+      "src/middleware.ts",
+      ".env.local"
+    ]
+  },
+  "output": {
+    "console_prefix": "🤖 [Traycer]",
+    "log_to_supabase": true,
+    "emoji_status": {
+      "starting": "🚀",
+      "success": "✅",
+      "error": "❌",
+      "building": "🔨"
+    }
+  }
+}
